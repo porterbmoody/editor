@@ -10,6 +10,8 @@
 #include <regex>
 #include <string>
 #include <sstream>
+#include <string>
+#include <unordered_map>
 
 embedded_terminal::embedded_terminal(HWND parent, int x, int y, int width, int height)
 {
@@ -157,3 +159,22 @@ void embedded_terminal::run_log(int depth)
     embedded_terminal::append_output("Runtime: " + std::to_string(duration.count()) + " seconds\n");
     fclose(log_file);
 }
+
+// std::unordered_map<std::string, std::string> embedded_terminal::read_config(const std::string& filename)
+// {
+// 	std::unordered_map<std::string, std::string> config;
+// 	std::ifstream file(filename);
+// 	if (!file.is_open())
+// 		return config;
+// 	std::string line;
+// 	while (std::getline(file, line)) {
+// 		if (line.empty() || line[0] == '#')
+// 			continue;
+// 		size_t pos = line.find('=');
+// 		if (pos == std::string::npos)
+// 			continue;
+// 		config[line.substr(0, pos)] = line.substr(pos + 1);
+// 	}
+// 	return config;
+// }
+

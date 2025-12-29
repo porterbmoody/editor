@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Efficient Editor + Terminal</title>
+<style>
+  body {
+    margin: 0;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #1e1e1e;
+    color: #ccc;
+  }
+
+  #toolbar {
+    display: flex;
+    padding: 5px;
+    background: #2e2e2e;
+  }
+
+  #toolbar button {
+    margin-right: 5px;
+    padding: 5px 10px;
+    background: #444;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+  }
+
+  #toolbar button:hover {
+    background: #666;
+  }
+
+  #editor {
+    flex: 2;
+    width: 100%;
+    padding: 10px;
+    background: #1e1e1e;
+    color: #ccc;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: monospace;
+    font-size: 14px;
+  }
+
+  #terminal {
+    flex: 1;
+    width: 100%;
+    padding: 10px;
+    background: #111;
+    color: #0f0;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button id="run">Run</button>
+  <button id="clear">Clear Terminal</button>
+</div>
+
+<textarea id="editor" spellcheck="false"></textarea>
+<div id="terminal"></div>
+
+<script>
+const editor = document.getElementById("editor");
+const terminal = document.getElementById("terminal");
+
+document.getElementById("run").onclick = () => {
+  // Replace this with actual backend call
+  const code = editor.value;
+  appendTerminal(`Running code:\n${code}\n\n`);
+  // Example: fetch("/run", { method: "POST", body: code });
+};
+
+document.getElementById("clear").onclick = () => {
+  terminal.textContent = "";
+};
+
+function appendTerminal(text) {
+  terminal.textContent += text;
+  terminal.scrollTop = terminal.scrollHeight;
+}
+</script>
+
+</body>
+</html>
