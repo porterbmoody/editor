@@ -17,6 +17,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <thread>
+#define UNICODE
+#define _UNICODE
 #include <windows.h>
 #include "resources.h"
 #include "embedded_terminal.h"
@@ -31,9 +33,7 @@ HWND hTerminal;
 HBRUSH hButtonBrush;
 
 bool terminal_visible = true;
-// embedded_terminal* terminal = nullptr;
 embedded_terminal* terminal = nullptr;
-// std::unique_ptr<embedded_terminal> terminal;
 std::unordered_map<std::string, std::string> configurations = {
     {"toolbar_width",  "70"},
     {"button_height",  "40"},
@@ -126,7 +126,7 @@ void on_open_file(HWND)
 }
 void on_run_log(HWND)
 {
-    std::cout << "running log: " << output_source_file << std::endl;
+    // std::cout << "running log: " << output_source_file << std::endl;
     terminal->run_log(registry_depth);
 }
     // std::string content((std::istreambuf_iterator<char>(file)),
@@ -174,7 +174,10 @@ void on_run(HWND hWnd)
 void on_git_push(HWND)  
 { 
     terminal->append_output("pushing to github\n");
-    terminal->execute_command("git_push.bat");
+    terminal->execute_command("git add .");
+    terminal->execute_command("git commit -m \"auto commit from c++ ide\"");
+    terminal->execute_command("git pull");
+    terminal->execute_command("git push");
 }
 void on_exit(HWND hWnd){DestroyWindow(hWnd);}
 struct CommandHandler
@@ -200,23 +203,48 @@ HWND create_button(
     HWND parent,
     HINSTANCE hInstance,
     HFONT font,
-    const char* text,
+    const wchar_t* text,
     int id,
     int index
 )
 {
     HWND b = CreateWindowEx(
-        0, "BUTTON", text,
-        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        0,
+        L"BUTTON",
+        text,
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_OWNERDRAW, // owner-draw
         0, button_height * index, toolbar_width, button_height,
         parent,
         (HMENU)(INT_PTR)id,
         hInstance,
         NULL
     );
+
     SendMessage(b, WM_SETFONT, (WPARAM)font, TRUE);
     return b;
 }
+
+// HWND create_button(
+//     HWND parent,
+//     HINSTANCE hInstance,
+//     HFONT font,
+//     const char* text,
+//     int id,
+//     int index
+// )
+// {
+//     HWND b = CreateWindowEx(
+//         0, L"BUTTON", text,
+//         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+//         0, button_height * index, toolbar_width, button_height,
+//         parent,
+//         (HMENU)(INT_PTR)id,
+//         hInstance,
+//         NULL
+//     );
+//     SendMessage(b, WM_SETFONT, (WPARAM)font, TRUE);
+//     return b;
+// }
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 {
     // auto config = terminal->read_config("config.txt");
@@ -236,10 +264,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 CLIP_DEFAULT_PRECIS,
                 CLEARTYPE_QUALITY,
                 DEFAULT_PITCH | FF_DONTCARE,
-                "Audiowide"
+                L"Audiowide"
             );
             
-            hEdit = CreateWindowEx(0, "EDIT", "",
+            hEdit = CreateWindowEx(0, L"EDIT", L"",
                 WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL,
                 toolbar_width, 0,
                 editor_width, editor_height,
@@ -261,7 +289,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {"exit",      idm_exit},
             };
             for (int i = 0; i < sizeof(buttons)/sizeof(buttons[0]); ++i) {
-                create_button(hWnd, hInstance, hToolbarFont, buttons[i].text, buttons[i].id, i);
+                // create_button(hWnd, hInstance, hToolbarFont, buttons[i].text, buttons[i].id, i);
+                std::string s = buttons[i].text;
+                std::wstring ws(s.begin(), s.end());
+                create_button(hWnd, hInstance, hToolbarFont, ws.c_str(), buttons[i].id, i);
             }
             break;
         }
@@ -281,6 +312,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetBkColor(hdc, RGB(20, 20, 20));
             return (LRESULT)hEditBrush;
         }
+        case WM_DRAWITEM:
+        {
+            DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
+            if (dis->CtlType == ODT_BUTTON) {
+                HBRUSH brush;
+                if (dis->itemState & ODS_SELECTED) {
+                    brush = CreateSolidBrush(RGB(30, 30, 30));
+                } else if (dis->itemState & ODS_HOTLIGHT) {
+                    brush = CreateSolidBrush(RGB(50, 50, 50));
+                } else {
+                    brush = CreateSolidBrush(RGB(0, 0, 0));
+                }
+
+                FillRect(dis->hDC, &dis->rcItem, brush);
+                DeleteObject(brush);
+                DrawEdge(dis->hDC, &dis->rcItem, EDGE_RAISED, BF_RECT);
+                SetTextColor(dis->hDC, RGB(220, 220, 220));
+                SetBkMode(dis->hDC, TRANSPARENT);
+                wchar_t text[256];
+                GetWindowText(dis->hwndItem, text, 256);
+                DrawText(dis->hDC, text, -1, &dis->rcItem,
+                        DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+                return TRUE;
+            }
+            break;
+        }
+
+        // case WM_DRAWITEM:
+        // {
+        //     DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
+        //     if (dis->CtlID == id) {
+        //         HBRUSH brush = CreateSolidBrush(RGB(0,0,0));
+        //         FillRect(dis->hDC, &dis->rcItem, brush);
+        //         DeleteObject(brush);
+        //         SetTextColor(dis->hDC, RGB(220,220,220));
+        //         SetBkMode(dis->hDC, TRANSPARENT);
+        //         DrawText(dis->hDC, text, -1, &dis->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        //         return TRUE;
+        //     }
+        //     break;
+        // }
+
         // case WM_CTLCOLOREDIT:
         // {
         //     HDC hdc = (HDC)wParam;
@@ -344,9 +417,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = "TextEditorClass";
+    wc.lpszClassName = L"TextEditorClass";
     RegisterClassEx(&wc);
-    HWND hWnd = CreateWindowEx(0, "TextEditorClass", "c++ editor", WS_OVERLAPPEDWINDOW,
+    HWND hWnd = CreateWindowEx(0, wc.lpszClassName, L"c++ editor", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, window_width, window_height, NULL, NULL, hInstance, NULL);
     terminal = new embedded_terminal(hWnd, toolbar_width, editor_height, editor_width, terminal_height);
     // // RECT rcClient;
