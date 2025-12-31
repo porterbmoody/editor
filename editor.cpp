@@ -32,12 +32,10 @@ HWND hConsoleChild;
 HWND hTerminal;
 HBRUSH hButtonBrush;
 
-bool terminal_visible = true;
-embedded_terminal* terminal = nullptr;
 std::unordered_map<std::string, std::string> configurations = {
     {"toolbar_width",  "70"},
     {"button_height",  "40"},
-    {"registry_depth", "3"},
+    {"folder_depth", "5"},
     {"window_width",   "800"},
     {"window_height",  "600"},
     {"toolbar_width",  "600"},
@@ -46,9 +44,11 @@ std::unordered_map<std::string, std::string> configurations = {
     {"output_exe", "new_file.exe"},
     {"output_source_file", "new_file.cpp"},
 };
+bool terminal_visible = true;
+embedded_terminal* terminal = nullptr;
 int toolbar_width = std::stoi(configurations.find("toolbar_width")->second);
 int button_height = std::stoi(configurations.find("button_height")->second);
-int registry_depth = std::stoi(configurations.find("registry_depth")->second);
+int folder_depth = std::stoi(configurations.find("folder_depth")->second);
 int window_width = std::stoi(configurations.find("window_width")->second);
 int window_height = std::stoi(configurations.find("window_height")->second);
 int terminal_height = window_height / 2;
@@ -126,8 +126,8 @@ void on_open_file(HWND)
 }
 void on_run_log(HWND)
 {
-    // std::cout << "running log: " << output_source_file << std::endl;
-    terminal->run_log(registry_depth);
+    terminal->append_output("folder_depth: "+std::to_string(folder_depth) + "\n");
+    terminal->run_log(folder_depth);
 }
     // std::string content((std::istreambuf_iterator<char>(file)),
     //                     std::istreambuf_iterator<char>());

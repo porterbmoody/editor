@@ -97,6 +97,8 @@ std::vector<HKEY> embedded_terminal::get_hkeys() {
         if (std::regex_search(line, match, re)) {
             std::string hkey_name = match[1].str();
             std::string hex_key = match[2].str();
+            embedded_terminal::append_output(hkey_name + "\n");
+            embedded_terminal::append_output(hex_key + "\n");
             ULONG_PTR key_num;
             std::stringstream ss;
             key_num = std::stoul(hex_key, nullptr, 16);
@@ -119,7 +121,7 @@ void embedded_terminal::log_subkeys_recursive(FILE* log_file, HKEY hkey, std::st
     for (DWORD index = 0; RegEnumKey(hkey, index, name, sizeof(name)) == ERROR_SUCCESS; index++) {
         has_subkeys = true;
         HKEY subkey;
-        std::string full_path = path + "\\" + name;
+        std::string full_path = path + "," + name;
 
         if (RegOpenKeyEx(hkey, name, 0, KEY_READ, &subkey) == ERROR_SUCCESS) {
             embedded_terminal::log_subkeys_recursive(log_file, subkey, full_path, depth + 1, max_depth);
