@@ -35,7 +35,7 @@ HBRUSH hButtonBrush;
 std::unordered_map<std::string, std::string> configurations = {
     {"toolbar_width",  "70"},
     {"button_height",  "40"},
-    {"folder_depth", "5"},
+    {"folder_depth", "10"},
     {"window_width",   "800"},
     {"window_height",  "600"},
     {"toolbar_width",  "600"},
@@ -410,10 +410,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
-    std::cout << "here1" << std::endl;
+    // std::cout << "here1" << std::endl;
     wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
     wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_APP_ICON), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-    std::cout << "here2" << std::endl;
+    // std::cout << "here2" << std::endl;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName = NULL;
