@@ -37,12 +37,47 @@ df
 
 
 # %%
-df.head().groupby(['root']).sum()
+# df.head(10000).groupby(['root', 'c0']).sum().reset_index()
+# df.head(10000).groupby(['root', 'c0']).agg('sum').reset_index()
 
+# Option 2: Using agg()
+grouped = df.groupby(['root', 'c0', 'c1']).agg(
+    count=('c0', 'count'),
+    # value_sum=('value_column', 'sum')
+).reset_index().sort_values(by='count',ascending=False).query("count>6")
+
+grouped
+
+# grouped
 
 # %%
 df.groupby(['root']).sum()
 
+# %%
 
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# top_df = df.sort_values('count', ascending=False).head(10)
+
+plt.figure(figsize=(12,6))
+plt.bar(grouped['c0'], grouped['count'], color='skyblue')
+plt.xticks(rotation=45, ha='right')
+plt.xlabel('c0')
+plt.ylabel('Count')
+plt.title('Top 10 c0 counts')
+plt.tight_layout()
+plt.show()
 
 # %%
+import pandas as pd
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(12,6))
+plt.bar(grouped.head(100)['c1'], grouped.head(100)['count'], color='skyblue')
+plt.xticks(rotation=45, ha='right')
+plt.xlabel('c1')
+plt.ylabel('Count')
+plt.title('Top 10 c0 counts')
+plt.tight_layout()
+plt.show()
